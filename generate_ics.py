@@ -28,7 +28,7 @@ for page in data.get("results", []):
 
     title = "Untitled"
 
-    # 读取 Assignment Name
+    # Assignment Name
     if "Assignment Name" in props:
         title_prop = props["Assignment Name"]
 
@@ -38,7 +38,7 @@ for page in data.get("results", []):
             if title_array:
                 title = title_array[0]["plain_text"]
 
-    # 读取 Deadline
+    # Deadline
     if "Deadline" not in props:
         continue
 
@@ -56,14 +56,12 @@ for page in data.get("results", []):
 
     end_raw = deadline.get("end")
 
-from datetime import datetime, timedelta
+    if end_raw:
+        end_date = datetime.strptime(end_raw[:10], "%Y-%m-%d")
+    else:
+        end_date = datetime.strptime(start_raw[:10], "%Y-%m-%d") + timedelta(days=1)
 
-if end_raw:
-    end_date = datetime.strptime(end_raw[:10], "%Y-%m-%d")
-else:
-    end_date = datetime.strptime(start_raw[:10], "%Y-%m-%d") + timedelta(days=1)
-
-end = end_date.strftime("%Y%m%d")
+    end = end_date.strftime("%Y%m%d")
 
     ics += f"""
 BEGIN:VEVENT
