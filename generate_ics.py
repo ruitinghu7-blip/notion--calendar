@@ -1,6 +1,5 @@
 import os
 import requests
-from datetime import datetime
 
 TOKEN = os.environ["NOTION_TOKEN"]
 DATABASE_ID = os.environ["DATABASE_ID"]
@@ -14,6 +13,7 @@ headers = {
 url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
 
 response = requests.post(url, headers=headers)
+
 data = response.json()
 
 ics = """BEGIN:VCALENDAR
@@ -27,12 +27,17 @@ for page in data.get("results", []):
 
     title = "Untitled"
 
-    for value in props.values():
-        if value.get("type") == "title":
-            title_array = value.get("title", [])
+    # 读取 Assignment Name
+    if "Assignment Name" in props:
+        title_prop = props["Assignment Name"]
+
+        if title_prop["type"] == "title":
+            title_array = title_prop.get("title", [])
+
             if title_array:
                 title = title_array[0]["plain_text"]
 
+    # 读取 Deadline
     if "Deadline" not in props:
         continue
 
@@ -41,13 +46,25 @@ for page in data.get("results", []):
     if not deadline:
         continue
 
-    start = deadline["start"][:10].replace("-", "")
+    start_raw = deadline.get("start")
+
+    if not start_raw:
+        continue
+
+    start = start_raw[:10].replace("-", "")
+
+    end_raw = deadline.get("end")
+
+    if end_raw:
+        end = end_raw[:10].replace("-", "")
+    else:
+        end = start
 
     ics += f"""
 BEGIN:VEVENT
 SUMMARY:{title}
 DTSTART;VALUE=DATE:{start}
-DTEND;VALUE=DATE:{start}
+DTEND;VALUE=DATE:{end}
 END:VEVENT
 """
 
