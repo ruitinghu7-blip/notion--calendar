@@ -1,5 +1,6 @@
 import os
 import requests
+from datetime import datetime, timedelta
 
 TOKEN = os.environ["NOTION_TOKEN"]
 DATABASE_ID = os.environ["DATABASE_ID"]
@@ -55,10 +56,14 @@ for page in data.get("results", []):
 
     end_raw = deadline.get("end")
 
-    if end_raw:
-        end = end_raw[:10].replace("-", "")
-    else:
-        end = start
+from datetime import datetime, timedelta
+
+if end_raw:
+    end_date = datetime.strptime(end_raw[:10], "%Y-%m-%d")
+else:
+    end_date = datetime.strptime(start_raw[:10], "%Y-%m-%d") + timedelta(days=1)
+
+end = end_date.strftime("%Y%m%d")
 
     ics += f"""
 BEGIN:VEVENT
